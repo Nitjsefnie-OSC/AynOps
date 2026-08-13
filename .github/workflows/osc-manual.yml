@@ -20,7 +20,8 @@ jobs:
           ref: "${{ inputs.target_ref }}"
 
       - name: Report checked-out SHA
-        run: echo "checked-out SHA: $(git rev-parse HEAD)"
+        run: |
+          echo "checked-out SHA: $(git rev-parse HEAD)"
 
       - uses: actions/setup-python@v5
         with:
