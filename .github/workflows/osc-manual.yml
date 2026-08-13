@@ -1,0 +1,31 @@
+name: osc-manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Ref (branch, tag or SHA) to check out and test"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ inputs.target_ref }}"
+
+      - name: Report checked-out SHA
+        run: echo "checked-out SHA: $(git rev-parse HEAD)"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - run: pytest tests/ -v
