@@ -291,6 +291,26 @@ class TestDnsEnumeration(unittest.TestCase):
         resolver.resolve.assert_any_call("mail.example.com", "CNAME", lifetime=3, tcp=True)
 
     @patch("tools.dns_tool.dns.resolver.Resolver")
+    def test_aaaa_found_subdomain_has_no_expected_a_error(self, mock_resolver_class):
+        import dns.resolver as real_dns
+
+        resolver = Mock()
+        mock_resolver_class.return_value = resolver
+
+        def side_effect(domain, rtype, lifetime=5, tcp=False):
+            if domain == "example.com":
+                raise real_dns.NoAnswer
+            if domain == "mail.example.com" and rtype == "AAAA":
+                return self._make_resolver_answer(["2001:db8::20"])
+            raise real_dns.NoAnswer
+
+        resolver.resolve.side_effect = side_effect
+        result = dns_enumeration("example.com")
+
+        self.assertIn("mail.example.com", result["subdomains_found"])
+        self.assertNotIn("mail.example.com", result["subdomain_errors"])
+
+    @patch("tools.dns_tool.dns.resolver.Resolver")
     def test_record_parsing_errors_propagate(self, mock_resolver_class):
         import dns.resolver as real_dns
 
