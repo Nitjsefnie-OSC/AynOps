@@ -27,13 +27,13 @@ jobs:
         env:
           TARGET_REF: ${{ inputs.target_ref }}
         run: |
-          normalized="$TARGET_REF"
-          normalized="${normalized#"${normalized%%[![:space:]]*}"}"
-          normalized="${normalized%"${normalized##*[![:space:]]}"}"
-          if [[ -z "$normalized" || "$normalized" != "$TARGET_REF" ]]; then
-            echo "::error::target_ref must not be empty or have leading/trailing whitespace"
-            exit 1
-          fi
+          node <<'NODE'
+          const value = process.env.TARGET_REF ?? "";
+          if (value === "" || value.trim() !== value) {
+            console.error("::error::target_ref must not be empty or have leading/trailing whitespace");
+            process.exit(1);
+          }
+          NODE
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
